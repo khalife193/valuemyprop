@@ -25,6 +25,12 @@
   const aed = (n) => "AED " + Math.round(n).toLocaleString("en-US");
   const bedsLabel = (b) => (b === "S" ? "Studio" : b === "5" ? "5+ bed" : b ? `${b} bed` : "—");
   const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const SYN = { blvd: "boulevard", bldg: "building", twr: "tower", twrs: "tower", res: "residence", apts: "apartment", apt: "apartment", st: "street", mkt: "market", ph: "phase", "1st": "first", "2nd": "second" };
+  // lower-case, drop punctuation, singular words, expand common abbreviations
+  const norm = (s) => (s || "").toLowerCase().replace(/&/g, " and ").replace(/['’`]/g, "").replace(/[^a-z0-9\u0600-\u06FF]+/g, " ").trim()
+    .split(/\s+/).map((w) => SYN[w] || w).map((w) => (w.length > 4 && w.endsWith("es") && !w.endsWith("ses") ? w.slice(0, -1) : w))
+    .map((w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w)).join(" ");
+  const AREA_ABBR = { "JUMEIRAH VILLAGE CIRCLE": "jvc", "JUMEIRAH VILLAGE TRIANGLE": "jvt", "JUMEIRAH LAKES TOWERS": "jlt", "JUMEIRAH BEACH RESIDENCE": "jbr", "DUBAI SILICON OASIS": "dso", "INTERNATIONAL CITY": "intl", "BUSINESS BAY": "bb", "DUBAI INVESTMENT PARK": "dip", "MOHAMMED BIN RASHID CITY": "mbr", "DUBAI SPORTS CITY": "dsc", "DUBAI CREEK HARBOUR": "dch", "BURJ KHALIFA": "downtown dubai", "ARJAN": "al barsha south", "DUBAI MARINA": "marina" };
   const activity = (st) => Object.entries(st).filter(([k]) => k === "s:A:*" || k === "r:*").reduce((a, [, v]) => a + v[1], 0);
 
   /* ---------- load data ---------- */
@@ -37,9 +43,14 @@
       } catch (e) { /* try next */ }
     }
     if (!M) { $("#loading").innerHTML = "Sorry — market data is temporarily unavailable. Please try again shortly."; return; }
-    M.buildings.forEach((b) => { b._al = (b.al || []).map((x) => x.toLowerCase()); b._q = [b.n.toLowerCase()].concat(b._al).join(" | "); b._act = activity(b.st); b._area = areaLabel(b.a); b._aq = b._area.toLowerCase() + " " + b.a.toLowerCase(); });
-    M._areaList = Object.keys(M.areas).map((a) => ({ a, label: areaLabel(a), q: (areaLabel(a) + " " + a).toLowerCase(), act: activity(M.areas[a].st) }));
-    Object.entries(AREA_ALIASES).forEach(([pop, dld]) => { if (M.areas[dld]) { const x = M._areaList.find((y) => y.a === dld); if (x) x.q += " " + pop.toLowerCase(); } });
+    M.buildings.forEach((b) => {
+      b._al = b.al || [];
+      b._n = norm(b.n); b._aln = b._al.map(norm);
+      b._act = b.st ? activity(b.st) : 0; b._area = areaLabel(b.a);
+      b._aq = norm(b._area + " " + b.a + " " + (AREA_ABBR[b.a] || ""));
+    });
+    M._areaList = Object.keys(M.areas).map((a) => ({ a, label: areaLabel(a), q: norm(areaLabel(a) + " " + a + " " + (AREA_ABBR[a] || "")), act: activity(M.areas[a].st) }));
+    Object.entries(AREA_ALIASES).forEach(([pop, dld]) => { if (M.areas[dld]) { const x = M._areaList.find((y) => y.a === dld); if (x) x.q += " " + norm(pop); } });
     if (M.demo) {
       const d = document.createElement("div");
       d.style.cssText = "background:#FFF4E0;color:#7A4D00;padding:10px 24px;font-size:13px;font-weight:600;text-align:center";
@@ -56,43 +67,83 @@
     let items = [], hl = -1;
     const render = () => {
       if (!items.length) { list.classList.add("hidden"); return; }
-      list.innerHTML = items.map((it, i) => `<div class="ac-item${i === hl ? " hl" : ""}" data-i="${i}"><b>${esc(it.label)}</b><small>${esc(it.sub)}</small></div>`).join("");
+      list.innerHTML = (items.head ? `<div class="ac-head">${esc(items.head)}</div>` : "") +
+        items.map((it, i) => it.action
+          ? `<div class="ac-item ac-act${i === hl ? " hl" : ""}" data-i="${i}"><span>${esc(it.label)}</span></div>`
+          : `<div class="ac-item${i === hl ? " hl" : ""}" data-i="${i}"><span class="ac-main"><b>${esc(it.label)}</b><small>${esc(it.sub)}</small></span>${it.tag ? `<em class="ac-tag ${it.tagCls || ""}">${esc(it.tag)}</em>` : ""}</div>`).join("");
       list.classList.remove("hidden");
     };
-    input.addEventListener("input", () => { items = search(input.value.trim().toLowerCase()); hl = -1; render(); });
+    // On phones the keyboard covers half the screen: bring the box to the top and size the list to the space left
+    const fit = () => {
+      if (window.innerWidth > 720) return;
+      const r = input.getBoundingClientRect();
+      if (r.top > 160 || r.top < 100) window.scrollBy({ top: r.top - 110, behavior: "smooth" });
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      list.style.maxHeight = Math.max(220, vh - 110 - r.height - 16) + "px";
+    };
+    input.addEventListener("focus", () => setTimeout(fit, 250));
+    if (window.visualViewport) window.visualViewport.addEventListener("resize", () => { if (document.activeElement === input) fit(); });
+    input.addEventListener("input", () => { items = search(input.value.trim()); hl = -1; render(); list.scrollTop = 0; fit(); });
+    input.addEventListener("focus", () => { if (input.value.trim().length >= 2) { items = search(input.value.trim()); render(); } });
     input.addEventListener("keydown", (e) => {
       if (list.classList.contains("hidden")) return;
-      if (e.key === "ArrowDown") { hl = Math.min(hl + 1, items.length - 1); render(); e.preventDefault(); }
-      if (e.key === "ArrowUp") { hl = Math.max(hl - 1, 0); render(); e.preventDefault(); }
+      if (e.key === "ArrowDown") { hl = Math.min(hl + 1, items.length - 1); render(); scrollHl(); e.preventDefault(); }
+      if (e.key === "ArrowUp") { hl = Math.max(hl - 1, 0); render(); scrollHl(); e.preventDefault(); }
       if (e.key === "Enter" && hl >= 0) { pick(hl); e.preventDefault(); }
     });
     list.addEventListener("mousedown", (e) => { const el = e.target.closest(".ac-item"); if (el) pick(+el.dataset.i); });
     input.addEventListener("blur", () => setTimeout(() => list.classList.add("hidden"), 150));
-    const pick = (i) => { onPick(items[i].val); list.classList.add("hidden"); input.value = ""; items = []; };
+    const scrollHl = () => { const el = list.querySelector(".ac-item.hl"); if (el) el.scrollIntoView({ block: "nearest" }); };
+    const pick = (i) => { const it = items[i]; list.classList.add("hidden"); if (it.action) { it.action(input.value.trim()); return; } onPick(it.val); input.value = ""; items = []; };
   }
 
-  function searchBuildings(q) {
+  // ---- search: forgiving matching (word starts, plurals, common abbreviations), up to 60 results ----
+  function searchBuildings(raw) {
+    const q = norm(raw);
     if (q.length < 2) return [];
-    const words = q.split(/\s+/);
-    const nq = b => b.n.toLowerCase();
-    return M.buildings
-      .filter((b) => words.every((w) => b._q.includes(w) || b._aq.includes(w)))
-      .map((b) => {
-        // Which name did they type? The DLD project name, or one of its building names (e.g. "Bluewaters Residences 6")
-        const alias = nq(b).includes(q) ? null : b._al.find((a) => words.every((w) => a.includes(w) || b._aq.includes(w)));
-        const hitName = alias || nq(b);
-        const score = (hitName.startsWith(q) ? 1e6 : hitName.includes(q) ? 5e5 : 0) + b._act;
-        return { b, alias, score };
-      })
-      .sort((x, y) => y.score - x.score).slice(0, 8)
-      .map(({ b, alias }) => {
-        const label = title(alias ? b.al[b._al.indexOf(alias)] : b.n);
-        return { label, sub: alias ? `${title(b.n)} · ${b._area}` : b._area, val: { b, label } };
-      });
+    const words = q.split(" ");
+    const has = (txt, w) => (" " + txt).includes(" " + w); // word starts with w
+    const hits = [];
+    for (const b of M.buildings) {
+      let hitName = null, alias = -1;
+      if (words.every((w) => has(b._n, w) || has(b._aq, w))) hitName = b._n;
+      else {
+        alias = b._aln.findIndex((a) => words.every((w) => has(a, w) || has(b._aq, w)));
+        if (alias < 0) continue;
+        hitName = b._aln[alias];
+      }
+      const inName = words.filter((w) => has(hitName, w)).length; // 0 = matched on the area name only (e.g. "jvc")
+      const score = inName * 1e7 + (hitName.startsWith(q) ? 5e6 : 0) + (hitName === q ? 9e6 : 0) + (b.st ? 1e6 : 0) + b._act + (b.u || 0) / 100;
+      hits.push({ b, alias, score });
+    }
+    hits.sort((x, y) => y.score - x.score);
+    const out = hits.slice(0, 60).map(({ b, alias }) => {
+      const label = title(alias >= 0 ? b._al[alias] : b.n);
+      const sales = b.st && b.st["s:A:*"] ? b.st["s:A:*"][1] : 0;
+      const rents = b.st && b.st["r:*"] ? b.st["r:*"][1] : 0;
+      const count = sales ? `${sales} sales` : rents ? `${rents} rentals` : "";
+      return {
+        label,
+        sub: (alias >= 0 ? title(b.n) + " · " : "") + b._area,
+        tag: b.op ? "Off-plan" + (count ? " · " + count : "") : count || "Area estimate",
+        tagCls: b.op ? "op" : count ? "" : "mute",
+        val: { b, label },
+      };
+    });
+    out.head = hits.length > 60 ? `${hits.length} matches — showing top 60, keep typing to narrow down` : `${hits.length} match${hits.length === 1 ? "" : "es"}`;
+    out.push({ label: `Can't find “${raw}”? Use this name and choose the area →`, action: (txt) => useFreeName(txt) });
+    return out;
   }
-  function searchAreas(q) {
+  function useFreeName(txt) {
+    $("#areaField").classList.remove("hidden");
+    $("#bFree").value = txt;
+    $("#bSearch").value = "";
+    $("#aSearch").focus();
+  }
+  function searchAreas(raw) {
+    const q = norm(raw);
     if (q.length < 2) return [];
-    return M._areaList.filter((x) => x.q.includes(q)).sort((x, y) => y.act - x.act).slice(0, 8)
+    return M._areaList.filter((x) => q.split(" ").every((w) => (" " + x.q).includes(" " + w))).sort((x, y) => y.act - x.act).slice(0, 30)
       .map((x) => ({ label: x.label, sub: x.label.toUpperCase() !== x.a ? title(x.a) : "", val: x.a }));
   }
 

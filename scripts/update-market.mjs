@@ -16,6 +16,7 @@ const { buildMarket, cleanSale, cleanRent, mergeArchive, setParcelNames } = requ
 const readSeedJson = (f) => (existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {});
 setParcelNames(readSeedJson("data/seed/parcel-names.json")); // building names for sales with no DLD project
 const ALIASES = readSeedJson("data/seed/building-aliases.json"); // project -> tower names, for search
+const DIRECTORY = existsSync("data/seed/directory.json") ? JSON.parse(readFileSync("data/seed/directory.json", "utf8")) : null; // every registered project
 const { fetchAll } = require("../lib/dld.cjs");
 
 const SALES_MONTHS = 24; // keep 2 years of sales history in the archive
@@ -77,7 +78,7 @@ await save("archive-rents", rentsArc);
 log(`Archive now: ${salesArc.length} sales, ${rentsArc.length} rents`);
 
 /* ---------- build + publish ---------- */
-const market = buildMarket(salesArc, rentsArc, { today, cleaned: true, aliases: ALIASES });
+const market = buildMarket(salesArc, rentsArc, { today, cleaned: true, aliases: ALIASES, directory: DIRECTORY });
 const json = JSON.stringify(market);
 log(`Built market: ${JSON.stringify(market.counts)} · ${(json.length / 1024).toFixed(0)} KB`);
 
