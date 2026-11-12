@@ -12,7 +12,10 @@ import { createRequire } from "node:module";
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 const require = createRequire(import.meta.url);
-const { buildMarket, cleanSale, cleanRent, mergeArchive } = require("../lib/aggregate.cjs");
+const { buildMarket, cleanSale, cleanRent, mergeArchive, setParcelNames } = require("../lib/aggregate.cjs");
+const readSeedJson = (f) => (existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {});
+setParcelNames(readSeedJson("data/seed/parcel-names.json")); // building names for sales with no DLD project
+const ALIASES = readSeedJson("data/seed/building-aliases.json"); // project -> tower names, for search
 const { fetchAll } = require("../lib/dld.cjs");
 
 const SALES_MONTHS = 24; // keep 2 years of sales history in the archive
@@ -74,7 +77,7 @@ await save("archive-rents", rentsArc);
 log(`Archive now: ${salesArc.length} sales, ${rentsArc.length} rents`);
 
 /* ---------- build + publish ---------- */
-const market = buildMarket(salesArc, rentsArc, { today, cleaned: true });
+const market = buildMarket(salesArc, rentsArc, { today, cleaned: true, aliases: ALIASES });
 const json = JSON.stringify(market);
 log(`Built market: ${JSON.stringify(market.counts)} · ${(json.length / 1024).toFixed(0)} KB`);
 

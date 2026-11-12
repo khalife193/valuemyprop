@@ -37,7 +37,7 @@
       } catch (e) { /* try next */ }
     }
     if (!M) { $("#loading").innerHTML = "Sorry — market data is temporarily unavailable. Please try again shortly."; return; }
-    M.buildings.forEach((b) => { b._q = b.n.toLowerCase(); b._act = activity(b.st); b._area = areaLabel(b.a); b._aq = b._area.toLowerCase() + " " + b.a.toLowerCase(); });
+    M.buildings.forEach((b) => { b._al = (b.al || []).map((x) => x.toLowerCase()); b._q = [b.n.toLowerCase()].concat(b._al).join(" | "); b._act = activity(b.st); b._area = areaLabel(b.a); b._aq = b._area.toLowerCase() + " " + b.a.toLowerCase(); });
     M._areaList = Object.keys(M.areas).map((a) => ({ a, label: areaLabel(a), q: (areaLabel(a) + " " + a).toLowerCase(), act: activity(M.areas[a].st) }));
     Object.entries(AREA_ALIASES).forEach(([pop, dld]) => { if (M.areas[dld]) { const x = M._areaList.find((y) => y.a === dld); if (x) x.q += " " + pop.toLowerCase(); } });
     if (M.demo) {
@@ -74,11 +74,21 @@
   function searchBuildings(q) {
     if (q.length < 2) return [];
     const words = q.split(/\s+/);
+    const nq = b => b.n.toLowerCase();
     return M.buildings
       .filter((b) => words.every((w) => b._q.includes(w) || b._aq.includes(w)))
-      .map((b) => ({ b, score: (b._q.startsWith(q) ? 1e6 : b._q.includes(q) ? 5e5 : 0) + b._act }))
+      .map((b) => {
+        // Which name did they type? The DLD project name, or one of its building names (e.g. "Bluewaters Residences 6")
+        const alias = nq(b).includes(q) ? null : b._al.find((a) => words.every((w) => a.includes(w) || b._aq.includes(w)));
+        const hitName = alias || nq(b);
+        const score = (hitName.startsWith(q) ? 1e6 : hitName.includes(q) ? 5e5 : 0) + b._act;
+        return { b, alias, score };
+      })
       .sort((x, y) => y.score - x.score).slice(0, 8)
-      .map(({ b }) => ({ label: title(b.n), sub: b._area, val: b }));
+      .map(({ b, alias }) => {
+        const label = title(alias ? b.al[b._al.indexOf(alias)] : b.n);
+        return { label, sub: alias ? `${title(b.n)} · ${b._area}` : b._area, val: { b, label } };
+      });
   }
   function searchAreas(q) {
     if (q.length < 2) return [];
@@ -89,7 +99,7 @@
   function showPicked() {
     const bp = $("#bPicked");
     if (S.building) {
-      bp.innerHTML = `<div><b>${esc(title(S.building.n))}</b><small>${esc(S.building._area)}</small></div><button class="link" id="chgB">Change</button>`;
+      bp.innerHTML = `<div><b>${esc(S.building._picked || title(S.building.n))}</b><small>${esc(S.building._area)}</small></div><button class="link" id="chgB">Change</button>`;
       bp.classList.remove("hidden"); $("#bSearch").classList.add("hidden");
       $("#chgB").onclick = () => { S.building = null; bp.classList.add("hidden"); $("#bSearch").classList.remove("hidden"); $("#bSearch").focus(); };
       if (S.building.t) setSeg("#ptype", S.building.t, "type");
@@ -120,7 +130,7 @@
     $$(".mode").forEach((m) => m.addEventListener("click", () => {
       $$(".mode").forEach((x) => x.classList.remove("on")); m.classList.add("on"); S.mode = m.dataset.mode;
     }));
-    autocomplete($("#bSearch"), $("#bList"), searchBuildings, (b) => { S.building = b; S.area = b.a; $("#areaField").classList.add("hidden"); showPicked(); });
+    autocomplete($("#bSearch"), $("#bList"), searchBuildings, (v) => { const b = v.b; b._picked = v.label; S.building = b; S.area = b.a; $("#areaField").classList.add("hidden"); showPicked(); });
     autocomplete($("#aSearch"), $("#aList"), searchAreas, (a) => { S.area = a; showPicked(); });
     $("#noBuilding").onclick = () => { $("#areaField").classList.remove("hidden"); $("#aSearch").focus(); };
 
@@ -221,7 +231,7 @@
     const est = window.VMP.estimate(input, M, CFG);
     const cc = $("#cc").value === "other" ? $("#ccOther").value.trim().replace(/^(?!\+)/, "+") : $("#cc").value;
     const phone = `${cc} ${$("#phone").value.replace(/\D/g, "").replace(/^0+/, "")}`;
-    const buildingName = S.building ? title(S.building.n) : S.buildingFree;
+    const buildingName = S.building ? (S.building._picked || title(S.building.n)) : S.buildingFree;
 
     const lead = {
       "form-name": "valuation-lead",
