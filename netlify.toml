@@ -1,0 +1,10 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+# Netlify should NOT rebuild when the nightly job runs — data goes to Blobs, not to git.
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    cache-control = "public, max-age=3600"

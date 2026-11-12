@@ -1,0 +1,13 @@
+{
+  "name": "valuemyprop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "update-market": "node scripts/update-market.mjs",
+    "update-market:local": "node scripts/update-market.mjs --local"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

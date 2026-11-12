@@ -1,0 +1,42 @@
+<!--
+  valuemyprop — client email template for EmailJS
+  Paste this into EmailJS → Email Templates → (your template) → Content → "Edit content" → Code editor.
+  Subject:   Your {{valuation_type}}: {{estimate}}
+  To email:  {{to_email}}
+  From name: valuemyprop
+  Reply to:  ahmad.khalifa@propertylegacy.com
+  Bcc:       ahmad.khalifa@propertylegacy.com   (so you get a copy of every valuation sent)
+-->
+<div style="font-family:Arial,Helvetica,sans-serif;background:#F6F6F9;padding:24px 12px">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:auto;background:#ffffff;border-radius:16px;overflow:hidden">
+    <tr><td style="background:#1E1B3A;padding:20px 24px;color:#ffffff;font-size:20px;font-weight:bold">
+      value<span style="color:#FF7A6F">my</span>prop
+    </td></tr>
+    <tr><td style="padding:24px">
+      <p style="margin:0 0 12px;color:#2B2A33;font-size:15px">Hi {{to_name}},</p>
+      <p style="margin:0 0 18px;color:#2B2A33;font-size:15px">Here is your {{valuation_type}} based on Dubai Land Department registered data.</p>
+
+      <div style="text-align:center;border:1px solid #E6E6EC;border-radius:14px;padding:20px">
+        <div style="color:#E8473D;font-size:12px;font-weight:bold;letter-spacing:1px;text-transform:uppercase">{{valuation_type}}</div>
+        <div style="color:#6B6A76;font-size:14px;margin-top:6px">{{property}}<br>{{location}}</div>
+        <div style="color:#1E1B3A;font-size:32px;font-weight:bold;margin-top:12px">{{estimate}}</div>
+        <div style="color:#2B2A33;font-size:14px;margin-top:4px">Likely range: <b>{{range}}</b></div>
+        <div style="color:#6B6A76;font-size:12px;margin-top:10px">Based on {{basis}}</div>
+      </div>
+
+      <p style="margin:22px 0 8px;color:#1E1B3A;font-weight:bold;font-size:15px">How we got there</p>
+      <table width="100%" cellpadding="8" cellspacing="0" style="font-size:13px;color:#2B2A33;border-top:1px solid #F1F1F4">
+        {{{breakdown}}}
+      </table>
+
+      <div style="background:#1E1B3A;border-radius:14px;padding:20px;margin-top:22px;color:#ffffff">
+        <div style="font-size:17px;font-weight:bold">Want an exact figure?</div>
+        <div style="font-size:13px;opacity:.85;margin-top:6px">View, floor and finish can move the price 10–20%. Get a free professional valuation from a Dubai specialist.</div>
+        <a href="{{agent_whatsapp}}" style="display:inline-block;margin-top:14px;background:#25D366;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 18px;border-radius:10px">WhatsApp a specialist</a>
+        <div style="font-size:13px;margin-top:10px;opacity:.85">or call {{agent_phone}}</div>
+      </div>
+
+      <p style="color:#6B6A76;font-size:11px;line-height:1.5;margin-top:20px">This is an automated estimate based on Dubai Land Department registered transactions and the details you provided. It is not a formal valuation (RICS / DLD-registered valuer). Actual price depends on view, floor, layout, condition and market timing.</p>
+    </td></tr>
+  </table>
+</div>
