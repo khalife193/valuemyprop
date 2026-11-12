@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>valuemyprop — Free Dubai Property Valuation (Sale & Rent)</title>
+<meta name="description" content="Find out what your Dubai property is worth in 60 seconds. Instant sale and rental estimates based on Dubai Land Department registered transactions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#E8473D; --red-d:#C9362D; --red-l:#FDECEA;
+  --navy:#1E1B3A; --ink:#2B2A33; --mute:#6B6A76; --line:#E6E6EC;
+  --bg:#F6F6F9; --white:#fff; --green:#1F9D6B; --amber:#E29A1B;
+  --r:14px; --shadow:0 6px 24px rgba(30,27,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--red)}
+.hidden{display:none!important}
+
+/* header */
+header{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.nav{max-width:1080px;margin:auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.5px;color:var(--navy);display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo .dot{width:28px;height:28px;border-radius:8px;background:var(--red);display:grid;place-items:center;color:#fff;font-size:15px}
+.logo b{color:var(--red)}
+.nav a.cta{background:var(--red);color:#fff;text-decoration:none;padding:9px 16px;border-radius:999px;font-weight:600;font-size:14px}
+
+/* hero */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#2D2853 100%);color:#fff;padding:44px 20px 120px}
+.hero-in{max-width:1080px;margin:auto}
+.hero h1{font-size:clamp(28px,4.4vw,44px);font-weight:800;letter-spacing:-1px;line-height:1.1;max-width:640px}
+.hero h1 span{color:#FF7A6F}
+.hero p{opacity:.85;margin-top:12px;font-size:17px;max-width:560px}
+.trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px;font-size:14px;opacity:.9}
+.trust div{display:flex;align-items:center;gap:6px}
+.trust i{font-style:normal;color:#FF7A6F;font-weight:700}
+
+/* card / wizard */
+.wrap{max-width:760px;margin:-90px auto 40px;padding:0 16px}
+.card{background:var(--white);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.progress{height:5px;background:var(--line)}
+.progress div{height:100%;background:var(--red);width:25%;transition:width .35s}
+.steps-label{display:flex;justify-content:space-between;padding:14px 24px 0;font-size:13px;color:var(--mute)}
+.step{padding:22px 24px 26px}
+.step h2{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-.3px}
+.step .sub{color:var(--mute);margin-top:4px;font-size:15px}
+.field{margin-top:20px}
+.field>label,.lbl{display:block;font-weight:600;font-size:14px;margin-bottom:8px;color:var(--navy)}
+.opt{font-weight:400;color:var(--mute)}
+.input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;background:#fff;outline:none;transition:border .15s}
+.input:focus{border-color:var(--red)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+
+/* mode cards */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.mode{border:2px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;background:#fff;text-align:left;transition:.15s}
+.mode:hover{border-color:#F3A49E}
+.mode.on{border-color:var(--red);background:var(--red-l)}
+.mode .ic{font-size:24px}
+.mode b{display:block;margin-top:6px;color:var(--navy);font-size:16px}
+.mode small{color:var(--mute);font-size:13px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:.15s;user-select:none}
+.chip:hover{border-color:#F3A49E}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:12px 8px;cursor:pointer;font-weight:500;font-size:14px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--navy);color:#fff}
+
+/* autocomplete */
+.ac{position:relative}
+.ac-list{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);max-height:300px;overflow:auto;z-index:10}
+.ac-item{padding:11px 14px;cursor:pointer;border-bottom:1px solid #F1F1F4;display:flex;justify-content:space-between;gap:10px}
+.ac-item:last-child{border-bottom:0}
+.ac-item:hover,.ac-item.hl{background:var(--red-l)}
+.ac-item b{font-weight:600;font-size:15px}
+.ac-item small{color:var(--mute);font-size:13px;white-space:nowrap}
+.picked{margin-top:10px;display:flex;align-items:center;justify-content:space-between;background:var(--red-l);border-radius:12px;padding:12px 14px}
+.picked b{color:var(--navy)}
+.picked small{display:block;color:var(--mute)}
+.link{background:none;border:0;color:var(--red);font-weight:600;cursor:pointer;font-size:14px;padding:0}
+.help{font-size:13px;color:var(--mute);margin-top:6px}
+
+/* upgrade amount */
+.aed{position:relative}
+.aed span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:14px;font-weight:600}
+.aed .input{padding-left:48px}
+
+/* phone */
+.phone{display:grid;grid-template-columns:130px 1fr;gap:8px}
+
+/* actions */
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
+.btn{border:0;border-radius:12px;padding:14px 22px;font-weight:700;font-size:16px;cursor:pointer;transition:.15s}
+.btn-p{background:var(--red);color:#fff;flex:1;max-width:320px;margin-left:auto}
+.btn-p:hover{background:var(--red-d)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-g{background:transparent;color:var(--mute);padding-left:0}
+.err{color:var(--red);font-size:13px;margin-top:8px;min-height:1px}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--mute);margin-top:16px}
+.consent input{margin-top:3px;accent-color:var(--red);width:16px;height:16px}
+.sub-box{border-left:3px solid var(--red-l);padding-left:14px;margin-top:14px}
+
+/* result */
+.result{padding:28px 24px}
+.res-top{text-align:center;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.res-top .kicker{font-size:13px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.8px}
+.res-top .prop{color:var(--mute);margin-top:6px;font-size:15px}
+.res-val{font-size:clamp(34px,6vw,48px);font-weight:800;color:var(--navy);letter-spacing:-1.2px;margin-top:14px}
+.res-val small{font-size:18px;font-weight:600;color:var(--mute);letter-spacing:0}
+.res-range{margin-top:4px;color:var(--ink);font-size:16px}
+.res-range b{color:var(--navy)}
+.bar{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,#FBD3CF,var(--red),#FBD3CF);margin:18px auto 6px;max-width:420px}
+.bar i{position:absolute;left:50%;top:-5px;width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--navy);transform:translateX(-50%)}
+.bar-l{display:flex;justify-content:space-between;max-width:420px;margin:auto;font-size:12px;color:var(--mute)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;margin-top:14px}
+.badge.strong{background:#E3F6EE;color:var(--green)}
+.badge.medium{background:#FFF4E0;color:#A86D05}
+.badge.weak{background:#F1F1F4;color:var(--mute)}
+.res-sec{margin-top:22px}
+.res-sec h3{font-size:16px;color:var(--navy);margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:10px 8px;border-bottom:1px solid #F1F1F4;text-align:left}
+th{color:var(--mute);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+td.r,th.r{text-align:right}
+.pos{color:var(--green);font-weight:600}.neg{color:var(--red);font-weight:600}
+.cta-box{margin-top:24px;background:var(--navy);color:#fff;border-radius:16px;padding:22px;display:grid;gap:14px}
+.cta-box h3{font-size:19px}
+.cta-box p{opacity:.85;font-size:14px}
+.cta-btns{display:flex;gap:10px;flex-wrap:wrap}
+.cta-btns a{flex:1;min-width:180px;text-align:center;text-decoration:none;padding:13px 16px;border-radius:12px;font-weight:700}
+.wa{background:#25D366;color:#fff}
+.call{background:#fff;color:var(--navy)}
+.send-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;justify-content:center}
+.send-row a,.send-row span{font-size:14px;font-weight:600;padding:10px 14px;border-radius:999px;text-decoration:none}
+.send-ok{background:#E3F6EE;color:var(--green)}
+.send-wa{background:#fff;border:1.5px solid #25D366;color:#128C4A}
+.disc{font-size:12px;color:var(--mute);margin-top:18px;line-height:1.5}
+
+/* how it works */
+.how{max-width:1080px;margin:10px auto 0;padding:30px 20px 10px}
+.how h2{text-align:center;color:var(--navy);font-size:26px;letter-spacing:-.5px}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+@media(max-width:760px){.how-grid{grid-template-columns:1fr}}
+.how-card{background:#fff;border-radius:var(--r);padding:20px;box-shadow:0 2px 10px rgba(30,27,58,.04)}
+.how-card .n{width:34px;height:34px;border-radius:10px;background:var(--red-l);color:var(--red);font-weight:800;display:grid;place-items:center}
+.how-card b{display:block;margin-top:10px;color:var(--navy)}
+.how-card p{color:var(--mute);font-size:14px;margin-top:4px}
+footer{text-align:center;color:var(--mute);font-size:13px;padding:30px 20px 40px}
+.loading{padding:60px 24px;text-align:center;color:var(--mute)}
+.spin{width:38px;height:38px;border:4px solid var(--red-l);border-top-color:var(--red);border-radius:50%;margin:0 auto 14px;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- Netlify Forms: static copy so Netlify detects the lead form at deploy time -->
+<form name="valuation-lead" data-netlify="true" netlify-honeypot="company_website" hidden>
+  <input name="mode"><input name="building"><input name="area"><input name="unit_number"><input name="property_type">
+  <input name="bedrooms"><input name="size_sqft"><input name="status"><input name="occupancy"><input name="tenanted_until">
+  <input name="furnishing"><input name="upgraded"><input name="upgrades"><input name="upgrade_amount_paid"><input name="upgrade_date">
+  <input name="name"><input name="email"><input name="phone"><input name="consent">
+  <input name="estimate"><input name="estimate_range"><input name="estimate_basis"><input name="whatsapp_client_link"><input name="email_sent_to_client"><input name="company_website">
+</form>
+
+<header>
+  <div class="nav">
+    <a class="logo" href="#"><span class="dot">⌂</span><span>value<b>my</b>prop</span></a>
+    <a class="cta" id="hdrWa" href="#" target="_blank" rel="noopener">Talk to an expert</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-in">
+    <h1>What's your Dubai property <span>really</span> worth?</h1>
+    <p>Free instant sale and rental estimates, built on real Dubai Land Department transactions — not asking prices.</p>
+    <div class="trust">
+      <div><i>✓</i> Official DLD data, updated nightly</div>
+      <div><i>✓</i> Sale &amp; rent</div>
+      <div><i>✓</i> 60 seconds, free</div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="card" id="app">
+    <div class="loading" id="loading"><div class="spin"></div>Loading the latest Dubai market data…</div>
+
+    <div id="wizard" class="hidden">
+      <div class="progress"><div id="prog"></div></div>
+      <div class="steps-label"><span id="stepTxt">Step 1 of 4</span><span id="stepName">Your property</span></div>
+
+      <!-- STEP 1 -->
+      <section class="step" data-step="1">
+        <h2>What would you like to know?</h2>
+        <div class="modes">
+          <button class="mode on" data-mode="sale"><span class="ic">🏷️</span><b>Sale value</b><small>What could I sell for?</small></button>
+          <button class="mode" data-mode="rent"><span class="ic">🔑</span><b>Rental value</b><small>What could I rent it for per year?</small></button>
+        </div>
+
+        <div class="field">
+          <label for="bSearch">Building or community name</label>
+          <div class="ac">
+            <input class="input" id="bSearch" placeholder="Start typing, e.g. Marina Gate, Burj Vista, Sobha Hartland…" autocomplete="off">
+            <div class="ac-list hidden" id="bList"></div>
+          </div>
+          <div id="bPicked" class="picked hidden"></div>
+          <div class="help">Can't find it? <button class="link" id="noBuilding">Search by area instead</button></div>
+        </div>
+
+        <div class="field hidden" id="areaField">
+          <label for="aSearch">Area</label>
+          <div class="ac">
+            <input class="input" id="aSearch" placeholder="e.g. Dubai Marina, JVC, Downtown, Palm Jumeirah" autocomplete="off">
+            <div class="ac-list hidden" id="aList"></div>
+          </div>
+          <div id="aPicked" class="picked hidden"></div>
+          <div class="field">
+            <label for="bFree">Building name <span class="opt">(as you know it)</span></label>
+            <input class="input" id="bFree" placeholder="Your building's name">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="unit">Unit / villa number <span class="opt">(optional)</span></label>
+          <input class="input" id="unit" placeholder="e.g. 1504">
+        </div>
+        <div class="err" id="err1"></div>
+        <div class="actions"><span></span><button class="btn btn-p" data-next>Continue</button></div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step hidden" data-step="2">
+        <h2>Tell us about the property</h2>
+        <p class="sub">Size is the biggest driver of value — check your title deed or Ejari if unsure.</p>
+        <div class="field">
+          <span class="lbl">Property type</span>
+          <div class="seg" id="ptype"><button data-v="A" class="on">Apartment</button><button data-v="V">Villa / Townhouse</button></div>
+        </div>
+        <div class="field">
+          <span class="lbl">Bedrooms</span>
+          <div class="chips" id="beds">
+            <span class="chip" data-v="S">Studio</span><span class="chip" data-v="1">1</span><span class="chip" data-v="2">2</span>
+            <span class="chip" data-v="3">3</span><span class="chip" data-v="4">4</span><span class="chip" data-v="5">5+</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="size">Size</label>
+          <div class="row">
+            <input class="input" id="size" type="number" inputmode="numeric" min="150" placeholder="e.g. 1,250">
+            <div class="seg" id="unitSel"><button data-v="sqft" class="on">sq ft</button><button data-v="sqm">sq m</button></div>
+          </div>
+        </div>
+        <div class="err" id="err2"></div>
+        <div class="actions"><button class="btn btn-g" data-back>← Back</button><button class="btn btn-p" data-next>Continue</button></div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="step hidden" data-step="3">
+        <h2>A few quick details</h2>
+        <p class="sub">These fine-tune your estimate.</p>
+
+        <div class="field" id="fStatus">
+          <span class="lbl">Ready or off-plan?</span>
+          <div class="seg" id="status"><button data-v="R" class="on">Ready</button><button data-v="O">Off-plan</button></div>
+        </div>
+
+        <div class="field" id="fOcc">
+          <span class="lbl">Is it vacant or tenanted?</span>
+          <div class="seg" id="occ"><button data-v="vacant" class="on">Vacant</button><button data-v="tenanted">Tenanted</button></div>
+          <div class="sub-box hidden" id="leaseBox">
+            <label class="lbl" for="leaseEnd">Tenanted until</label>
+            <input class="input" id="leaseEnd" type="month">
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="lbl">Furnishing</span>
+          <div class="seg" id="furn"><button data-v="unfurnished" class="on">Unfurnished</button><button data-v="partlyFurnished">Partly</button><button data-v="furnished">Furnished</button></div>
+        </div>
+
+        <div class="field">
+          <span class="lbl">Has it been upgraded?</span>
+          <div class="seg" id="upg"><button data-v="no" class="on">No</button><button data-v="yes">Yes</button></div>
+          <div class="sub-box hidden" id="upgBox">
+            <span class="lbl" style="margin-top:12px">What was upgraded?</span>
+            <div class="chips" id="upgItems"></div>
+            <div class="row" style="margin-top:16px">
+              <div><span class="lbl">Total amount paid <span class="opt">(optional)</span></span>
+                <div class="aed"><span>AED</span><input class="input" id="upgAmount" inputmode="numeric" placeholder="e.g. 85,000"></div></div>
+              <div><span class="lbl">When was it upgraded?</span>
+                <input class="input" id="upgDate" type="month"></div>
+            </div>
+          </div>
+        </div>
+        <div class="err" id="err3"></div>
+        <div class="actions"><button class="btn btn-g" data-back>← Back</button><button class="btn btn-p" data-next>Continue</button></div>
+      </section>
+
+      <!-- STEP 4 -->
+      <section class="step hidden" data-step="4">
+        <h2>Where should we send your valuation?</h2>
+        <p class="sub">Your estimate appears instantly on the next screen. We'll also send you a copy.</p>
+        <div class="field"><label for="name">Full name</label><input class="input" id="name" autocomplete="name" placeholder="Your name"></div>
+        <div class="field"><label for="email">Email</label><input class="input" id="email" type="email" autocomplete="email" placeholder="you@email.com"></div>
+        <div class="field">
+          <label for="phone">Mobile number</label>
+          <div class="phone">
+            <select class="input" id="cc">
+              <option value="+971" selected>🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option>
+              <option value="+965">🇰🇼 +965</option><option value="+973">🇧🇭 +973</option><option value="+968">🇴🇲 +968</option>
+              <option value="+44">🇬🇧 +44</option><option value="+1">🇺🇸/🇨🇦 +1</option><option value="+91">🇮🇳 +91</option>
+              <option value="+92">🇵🇰 +92</option><option value="+7">🇷🇺 +7</option><option value="+49">🇩🇪 +49</option>
+              <option value="+33">🇫🇷 +33</option><option value="+39">🇮🇹 +39</option><option value="+86">🇨🇳 +86</option>
+              <option value="+961">🇱🇧 +961</option><option value="+20">🇪🇬 +20</option><option value="+962">🇯🇴 +962</option>
+              <option value="+90">🇹🇷 +90</option><option value="+27">🇿🇦 +27</option><option value="+234">🇳🇬 +234</option>
+              <option value="+61">🇦🇺 +61</option><option value="+31">🇳🇱 +31</option><option value="+41">🇨🇭 +41</option>
+              <option value="other">Other</option>
+            </select>
+            <input class="input" id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="50 123 4567">
+          </div>
+          <input class="input hidden" id="ccOther" placeholder="Country code, e.g. +353" style="margin-top:8px">
+        </div>
+        <input id="hp" class="hidden" tabindex="-1" autocomplete="off">
+        <label class="consent"><input type="checkbox" id="consent"> <span>I agree to be contacted about my valuation by phone, WhatsApp or email. My details won't be shared with third parties.</span></label>
+        <div class="err" id="err4"></div>
+        <div class="actions"><button class="btn btn-g" data-back>← Back</button><button class="btn btn-p" id="submit">Get my valuation</button></div>
+      </section>
+    </div>
+
+    <div id="result" class="result hidden"></div>
+  </div>
+</main>
+
+<section class="how">
+  <h2>How your estimate is calculated</h2>
+  <div class="how-grid">
+    <div class="how-card"><div class="n">1</div><b>Real transactions</b><p>Every sale and Ejari rent contract registered with the Dubai Land Department, refreshed every night.</p></div>
+    <div class="how-card"><div class="n">2</div><b>Like-for-like comparison</b><p>We compare against your building first — same bedrooms and size — then your area. Outliers are removed.</p></div>
+    <div class="how-card"><div class="n">3</div><b>Your property's details</b><p>Vacancy, tenancy, furnishing and upgrades fine-tune the figure to your actual unit.</p></div>
+  </div>
+</section>
+
+<footer id="foot"></footer>
+
+<script src="config.js"></script>
+<script src="areas.js"></script>
+<script src="valuation.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
