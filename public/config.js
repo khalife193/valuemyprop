@@ -59,6 +59,7 @@ window.VMP_CONFIG = {
     },
     // How much of the upgrade value counts, by age of the upgrade
     ageFactor: { lt1: 1, "1to3": 0.75, "3to5": 0.4, gt5: 0 },
+    undatedFactor: 0.75,      // no upgrade date is asked any more: count upgrades at 75% of their value
     maxTotal: 12,              // cap on total upgrade uplift (%)
 
     // SALE: when the owner enters the amount paid, value added = amount × costRecovery × ageFactor

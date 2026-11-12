@@ -11,7 +11,7 @@
   const S = {
     step: 1, mode: "sale", building: null, area: null, buildingFree: "",
     type: "A", beds: null, sizeUnit: "sqft", status: "R", occupancy: "vacant", leaseEnd: "",
-    furnishing: "unfurnished", upgraded: false, upgrades: [], upgradeAmount: 0, upgradeDate: "",
+    furnishing: "unfurnished", upgraded: false, upgrades: [], upgradeAmount: 0, leaseLabel: "",
   };
 
   /* ---------- helpers ---------- */
@@ -59,7 +59,7 @@
     }
     $("#loading").classList.add("hidden");
     $("#wizard").classList.remove("hidden");
-    $("#foot").innerHTML = `Market data: Dubai Land Department (DLD open data &amp; data.dubai) · updated ${esc(M.updated)} · ${M.counts.sales.toLocaleString()} sales${M.coverage?" ("+esc(M.coverage.sales)+")":""} &amp; ${M.counts.rents.toLocaleString()} new rent contracts analysed<br>© ${new Date().getFullYear()} ${esc(CFG.brand.name)} · ${esc(CFG.brand.company)}`;
+    $("#foot").innerHTML = `Market data: Dubai Land Department · updated ${esc(M.updated)}<br>© ${new Date().getFullYear()} ${esc(CFG.brand.name)}`;
   }
 
   /* ---------- autocomplete ---------- */
@@ -188,7 +188,6 @@
     seg("#ptype", "type");
     chipsSingle("#beds", "beds");
     seg("#unitSel", "sizeUnit");
-    seg("#status", "status");
     seg("#occ", "occupancy", (v) => $("#leaseBox").classList.toggle("hidden", v !== "tenanted"));
     seg("#furn", "furnishing");
     seg("#upg", "upgradedS", (v) => { S.upgraded = v === "yes"; $("#upgBox").classList.toggle("hidden", !S.upgraded); });
@@ -198,8 +197,12 @@
       c.classList.toggle("on");
       S.upgrades = $$("#upgItems .chip.on").map((x) => x.dataset.v);
     }));
-    $("#upgDate").max = thisMonth();
-    $("#upgDate").addEventListener("input", (e) => { S.upgradeDate = e.target.value; });
+    // Tenancy end: one tap on a range instead of a date picker
+    $$("#lease button").forEach((b) => b.addEventListener("click", () => {
+      $$("#lease button").forEach((x) => x.classList.toggle("on", x === b));
+      const d = new Date(); d.setMonth(d.getMonth() + +b.dataset.m);
+      S.leaseEnd = d.toISOString().slice(0, 7); S.leaseLabel = b.textContent.trim();
+    }));
     $("#upgAmount").addEventListener("input", (e) => {
       const n = parseInt(e.target.value.replace(/[^\d]/g, ""), 10) || 0;
       S.upgradeAmount = n;
@@ -228,7 +231,6 @@
     $("#stepName").textContent = NAMES[n];
     // sale-only fields
     $("#fOcc").classList.toggle("hidden", S.mode !== "sale");
-    $("#fStatus").classList.toggle("hidden", S.mode !== "sale");
     window.scrollTo({ top: $("#app").offsetTop - 80, behavior: "smooth" });
   }
 
@@ -250,10 +252,8 @@
       return err(2);
     }
     if (n === 3) {
-      if (S.mode === "sale" && S.occupancy === "tenanted" && !$("#leaseEnd").value) return err(3, "When does the current tenancy end?");
+      if (S.mode === "sale" && S.occupancy === "tenanted" && !S.leaseEnd) return err(3, "When does the current tenancy end?");
       if (S.upgraded && !S.upgrades.length) return err(3, "Select what was upgraded.");
-      if (S.upgraded && !S.upgradeDate) return err(3, "When was the property upgraded?");
-      if (S.upgraded && S.upgradeDate > thisMonth()) return err(3, "The upgrade date can't be in the future.");
       if (S.upgraded && S.upgradeAmount > 20000000) return err(3, "Please check the amount paid.");
       return err(3);
     }
@@ -275,9 +275,9 @@
     const btn = $("#submit"); btn.disabled = true; btn.textContent = "Calculating…";
     const input = {
       mode: S.mode, building: S.building, area: S.area, type: S.type, beds: S.beds, sqft: Math.round(sqft()),
-      status: S.mode === "sale" ? S.status : "R", occupancy: S.occupancy, leaseEnd: $("#leaseEnd").value,
+      status: S.building && S.building.op ? "O" : "R", occupancy: S.occupancy, leaseEnd: S.leaseEnd,
       furnishing: S.furnishing, upgraded: S.upgraded, upgrades: S.upgraded ? S.upgrades : [],
-      upgradeAmount: S.upgraded ? S.upgradeAmount : 0, upgradeDate: S.upgraded ? S.upgradeDate : "",
+      upgradeAmount: S.upgraded ? S.upgradeAmount : 0,
     };
     const est = window.VMP.estimate(input, M, CFG);
     const cc = $("#cc").value === "other" ? $("#ccOther").value.trim().replace(/^(?!\+)/, "+") : $("#cc").value;
@@ -293,14 +293,12 @@
       property_type: S.type === "V" ? "Villa/Townhouse" : "Apartment",
       bedrooms: bedsLabel(S.beds),
       size_sqft: input.sqft,
-      status: S.mode === "sale" ? (S.status === "O" ? "Off-plan" : "Ready") : "",
       occupancy: S.mode === "sale" ? S.occupancy : "",
-      tenanted_until: S.mode === "sale" && S.occupancy === "tenanted" ? input.leaseEnd : "",
+      tenanted_until: S.mode === "sale" && S.occupancy === "tenanted" ? S.leaseLabel : "",
       furnishing: S.furnishing,
       upgraded: S.upgraded ? "Yes" : "No",
       upgrades: S.upgraded ? S.upgrades.map((k) => CFG.upgrades.items[k].label).join(", ") : "",
       upgrade_amount_paid: S.upgraded && S.upgradeAmount ? aed(S.upgradeAmount) : "",
-      upgrade_date: S.upgraded ? fmtMonth(S.upgradeDate) : "",
       name: $("#name").value.trim(),
       email: $("#email").value.trim(),
       phone,

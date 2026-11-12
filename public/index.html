@@ -165,6 +165,9 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:30px 20px 40px
 .loading{padding:60px 24px;text-align:center;color:var(--mute)}
 .spin{width:38px;height:38px;border:4px solid var(--red-l);border-top-color:var(--red);border-radius:50%;margin:0 auto 14px;animation:s 1s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
+.chips.lease{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.chips.lease .chip{min-height:52px;font-size:15px;border-radius:12px}
+@media(min-width:640px){.chips.lease{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
@@ -172,8 +175,8 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:30px 20px 40px
 <!-- Netlify Forms: static copy so Netlify detects the lead form at deploy time -->
 <form name="valuation-lead" data-netlify="true" netlify-honeypot="company_website" hidden>
   <input name="mode"><input name="building"><input name="area"><input name="unit_number"><input name="property_type">
-  <input name="bedrooms"><input name="size_sqft"><input name="status"><input name="occupancy"><input name="tenanted_until">
-  <input name="furnishing"><input name="upgraded"><input name="upgrades"><input name="upgrade_amount_paid"><input name="upgrade_date">
+  <input name="bedrooms"><input name="size_sqft"><input name="occupancy"><input name="tenanted_until">
+  <input name="furnishing"><input name="upgraded"><input name="upgrades"><input name="upgrade_amount_paid">
   <input name="name"><input name="email"><input name="phone"><input name="consent">
   <input name="estimate"><input name="estimate_range"><input name="estimate_basis"><input name="whatsapp_client_link"><input name="email_sent_to_client"><input name="company_website">
 </form>
@@ -275,17 +278,17 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:30px 20px 40px
         <h2>A few quick details</h2>
         <p class="sub">These fine-tune your estimate.</p>
 
-        <div class="field" id="fStatus">
-          <span class="lbl">Ready or off-plan?</span>
-          <div class="seg" id="status"><button data-v="R" class="on">Ready</button><button data-v="O">Off-plan</button></div>
-        </div>
-
         <div class="field" id="fOcc">
           <span class="lbl">Is it vacant or tenanted?</span>
           <div class="seg" id="occ"><button data-v="vacant" class="on">Vacant</button><button data-v="tenanted">Tenanted</button></div>
           <div class="sub-box hidden" id="leaseBox">
-            <label class="lbl" for="leaseEnd">Tenanted until</label>
-            <input class="input" id="leaseEnd" type="month">
+            <span class="lbl">When does the tenancy end?</span>
+            <div class="chips lease" id="lease">
+              <button type="button" class="chip" data-m="2">Within 3 months</button>
+              <button type="button" class="chip" data-m="5">3 – 6 months</button>
+              <button type="button" class="chip" data-m="9">6 – 12 months</button>
+              <button type="button" class="chip" data-m="18">Over 12 months</button>
+            </div>
           </div>
         </div>
 
@@ -300,12 +303,8 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:30px 20px 40px
           <div class="sub-box hidden" id="upgBox">
             <span class="lbl" style="margin-top:12px">What was upgraded?</span>
             <div class="chips" id="upgItems"></div>
-            <div class="row" style="margin-top:16px">
-              <div><span class="lbl">Total amount paid <span class="opt">(optional)</span></span>
-                <div class="aed"><span>AED</span><input class="input" id="upgAmount" inputmode="numeric" placeholder="e.g. 85,000"></div></div>
-              <div><span class="lbl">When was it upgraded?</span>
-                <input class="input" id="upgDate" type="month"></div>
-            </div>
+            <div style="margin-top:16px"><span class="lbl">Total amount paid <span class="opt">(optional)</span></span>
+              <div class="aed"><span>AED</span><input class="input" id="upgAmount" inputmode="numeric" placeholder="e.g. 85,000"></div></div>
           </div>
         </div>
         <div class="err" id="err3"></div>

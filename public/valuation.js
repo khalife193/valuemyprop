@@ -67,7 +67,7 @@
     }
     if (input.upgraded && input.upgrades && input.upgrades.length) {
       const u = cfg.upgrades;
-      const f = u.ageFactor[ageBucket(input.upgradeDate)] ?? 0;
+      const f = input.upgradeDate ? (u.ageFactor[ageBucket(input.upgradeDate)] ?? 0) : (u.undatedFactor ?? 0.75);
       const useAmount = (input.mode === "sale" || u.useAmountForRent) && input.upgradeAmount > 0 && baseValue > 0;
       let pct = useAmount
         ? (input.upgradeAmount * u.costRecovery * f / baseValue) * 100
